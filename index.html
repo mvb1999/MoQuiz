@@ -568,7 +568,12 @@ function renderPlayer(){
   if(!roomState?.active_question_id||!activeQuestion){$('playerBody').innerHTML=`<div class="waiting"><div class="status-big">Warte auf die nächste Frage</div><div>Der Host steuert das Quiz-Board.</div></div>`;return}
   const q=activeQuestion,rem=remainingSeconds(),winner=getTeam(roomState.buzzer_winner_team_id),selected=getTeam(roomState.active_team_id);let body=`<div class="player-prompt">${safe(q.prompt||'')}</div>${q.image_url?`<img class="player-question-image" src="${safe(q.image_url)}" alt="Bild zur Frage">`:''}`;
   if(q.question_type==='buzzer'&&!winner){
-    body+=`<div class="status-big ${roomState.buzzer_open?'ok':'muted'}">${roomState.buzzer_open?'Buzzer offen':'Buzzer gesperrt'}</div><button id="buzzButton" class="buzzer" ${roomState.buzzer_open?'':'disabled'}>BUZZ</button>`;
+    const alreadyBuzzed=!!q.has_buzzed;
+    if(alreadyBuzzed){
+      body+=`<div class="status-big muted">Du hast bereits gebuzzert.</div><div class="waiting">Du kannst bei dieser Frage nicht nochmals buzzern.</div><button class="buzzer" disabled>BUZZ</button>`;
+    }else{
+      body+=`<div class="status-big ${roomState.buzzer_open?'ok':'muted'}">${roomState.buzzer_open?'Buzzer offen':'Buzzer gesperrt'}</div><button id="buzzButton" class="buzzer" ${roomState.buzzer_open?'':'disabled'}>BUZZ</button>`;
+    }
   }else if(q.question_type==='buzzer'&&winner?.id!==current.teamId){
     body+=`<div class="status-big">${safe(winner?.name||'Ein Team')} war zuerst.</div><div class="waiting">Dieses Team gibt jetzt die Antwort ab.</div>`;
   }else if(q.question_type==='team'&&roomState.active_team_id!==current.teamId){

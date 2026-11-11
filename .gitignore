@@ -1,4 +1,7 @@
+*.otf
+*.ttf
 .DS_Store
 .vercel/
-*.ttf
-*.otf
+node_modules/
+test-results/
+tests/screenshots/

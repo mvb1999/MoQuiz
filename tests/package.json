@@ -1,0 +1,11 @@
+{
+  "name": "moquiz-tests",
+  "private": true,
+  "description": "Automatische Tests für MOQUIZ (Oberfläche mit nachgebildetem Backend)",
+  "scripts": {
+    "test": "node e2e/run.js"
+  },
+  "devDependencies": {
+    "playwright": "1.63.0"
+  }
+}

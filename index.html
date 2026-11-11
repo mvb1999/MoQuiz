@@ -65,7 +65,8 @@
     <div id="builderLibrary">
       <div class="builder-head">
         <div><h2>Meine Quiz</h2><p class="muted">Gespeicherte Quiz kannst du jederzeit wieder laden, bearbeiten und erneut spielen.</p></div>
-        <div class="toolbar"><button class="btn ghost" id="builderBack" type="button">Zurück</button><button class="btn primary" id="newQuiz" type="button">Neues Quiz</button></div>
+        <div class="toolbar"><button class="btn ghost" id="builderBack" type="button">Zurück</button><button class="btn ghost" id="importQuiz" type="button">Datei importieren</button><button class="btn primary" id="newQuiz" type="button">Neues Quiz</button></div>
+        <input type="file" id="importFile" accept=".json,application/json" hidden>
       </div>
       <div class="card"><div id="quizLibrary" class="library-list"><p class="muted">Lade Quiz …</p></div><div class="error" id="libraryError"></div></div>
     </div>
@@ -79,7 +80,8 @@
       </div>
       <div class="card" style="margin-bottom:14px">
         <label for="quizTitle" style="margin-top:0">Quiz-Titel</label><input id="quizTitle" placeholder="Freitagabend Quiz">
-        <div class="toolbar" style="margin-top:12px"><button class="btn secondary smallbtn" id="template5x5" type="button">5×5-Vorlage</button><span class="small muted">Erstellt fünf Kategorien mit je fünf Fragen von 100 bis 500 Punkten.</span></div>
+        <div class="toolbar" style="margin-top:12px"><button class="btn secondary smallbtn" id="template5x5" type="button">5×5-Vorlage</button><button class="btn secondary smallbtn" id="openTableImport" type="button">Aus Tabelle einfügen</button></div>
+        <p class="small muted" style="margin:8px 0 0">Die Vorlage erstellt fünf Kategorien mit je fünf Fragen von 100 bis 500 Punkten. Aus Excel oder Google Sheets übernimmst du viele Fragen auf einmal.</p>
       </div>
       <div id="categoryEditors" class="builder-grid"></div>
       <div class="builder-bottom"><button class="btn secondary" id="addCategory" type="button">+ Kategorie</button><button class="btn primary" id="saveQuizBottom" type="button">Quiz speichern</button></div>
@@ -119,6 +121,7 @@
             <button class="btn ghost full" id="toggleJoinInfo" type="button">QR-Code auf Beamer zeigen</button>
             <button class="btn ghost full" id="soundToggle" type="button">Ton: an</button>
             <button class="btn secondary full" id="hostBuilderShortcut" type="button">Meine Quiz verwalten</button>
+            <button class="linkbtn keys-link" id="openKeys" type="button">Tastenkürzel</button>
             <button class="linkbtn" id="leaveHost" type="button">Raum schliessen</button>
           </div>
         </div>
@@ -134,7 +137,7 @@
     </div>
     <div id="playerBody" class="player-card"><div class="waiting">Verbinde …</div></div>
     <div class="error" id="playerError" role="alert"></div>
-    <div class="player-foot"><button class="linkbtn" id="leavePlayer" type="button">Raum verlassen</button></div>
+    <div class="player-foot"><button class="linkbtn" id="addPhone" type="button">Weiteres Handy verbinden</button><button class="linkbtn" id="leavePlayer" type="button">Raum verlassen</button></div>
   </section>
 
   <!-- ============ Beamer ============ -->
@@ -187,6 +190,37 @@
     <div class="qr-box" id="phoneQr"></div>
     <p class="small"><strong>Wichtig:</strong> Diesen Code nicht auf dem Beamer zeigen, er gibt volle Kontrolle über den Raum.</p>
     <div class="toolbar"><button class="btn primary" id="switchToScreen" type="button">Hier Beamer-Ansicht zeigen</button><button class="btn ghost" id="copyControlLink" type="button">Link kopieren</button></div>
+  </div>
+</div>
+
+<div id="teamPhoneModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="teamPhoneTitle">
+  <div class="modal-card">
+    <div class="section-title" style="margin-bottom:6px"><h3 id="teamPhoneTitle" style="margin:0">Weiteres Handy verbinden</h3><button class="modal-close" id="closeTeamPhone" type="button" aria-label="Schliessen">×</button></div>
+    <p class="small">Scannt den Code mit einem zweiten Handy. Es spielt dann im gleichen Team mit: Antworten, Buzzer und Joker gelten für euch alle.</p>
+    <div class="qr-box" id="teamPhoneQr"></div>
+    <p class="small">Zeigt den Code nur eurem Team. Wer ihn scannt, kann für euch antworten.</p>
+    <button class="btn ghost" id="copyTeamLink" type="button">Link kopieren</button>
+  </div>
+</div>
+
+<div id="tableModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="tableTitle">
+  <div class="modal-card wide">
+    <div class="section-title" style="margin-bottom:6px"><h3 id="tableTitle" style="margin:0">Fragen aus Tabelle einfügen</h3><button class="modal-close" id="closeTable" type="button" aria-label="Schliessen">×</button></div>
+    <p class="small">Markiere in Excel, Numbers oder Google Sheets die Zeilen, kopiere sie und füge sie hier ein. Spalten in dieser Reihenfolge oder mit Überschrift: Kategorie, Frage, Antwort, Punkte, Typ, Zeit, Optionen. Pflicht sind nur Kategorie und Frage.</p>
+    <p class="small">Für Multiple Choice die Optionen mit | trennen (z.B. Aare | Rhein | Rhone) und als Antwort den Buchstaben oder den Text angeben.</p>
+    <textarea id="tableInput" rows="8" spellcheck="false" placeholder="Geografie&#9;Wie heisst die Hauptstadt der Schweiz?&#9;Bern&#9;100" aria-label="Tabelle einfügen"></textarea>
+    <div id="tablePreview" class="table-preview small" role="status"></div>
+    <div class="segmented" role="group" aria-label="Hinzufügen oder ersetzen" style="margin-top:12px"><button type="button" data-tmode="add" aria-pressed="true">Zum Quiz hinzufügen</button><button type="button" data-tmode="replace" aria-pressed="false">Alle Fragen ersetzen</button></div>
+    <div class="toolbar" style="margin-top:14px"><button class="btn primary" id="tableApply" type="button">Fragen übernehmen</button><button class="btn ghost" id="tableTemplate" type="button">Vorlage herunterladen</button></div>
+    <div class="error" id="tableError" role="alert"></div>
+  </div>
+</div>
+
+<div id="keysModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="keysTitle">
+  <div class="modal-card">
+    <div class="section-title" style="margin-bottom:6px"><h3 id="keysTitle" style="margin:0">Tastenkürzel</h3><button class="modal-close" id="closeKeys" type="button" aria-label="Schliessen">×</button></div>
+    <p class="small">Funktionieren in der Host-Steuerung, solange kein Eingabefeld aktiv ist.</p>
+    <div id="keysList" class="keys-list"></div>
   </div>
 </div>
 

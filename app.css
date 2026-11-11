@@ -460,3 +460,56 @@ body[data-mode=screen] .wrap{max-width:none;padding:0}
 @media(prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
 }
+
+/* ---------- Joker ---------- */
+.joker-card{margin-top:14px;border:1.5px solid var(--ink);border-radius:12px;background:#fff;padding:14px 16px;text-align:left}
+.joker-card p{margin:6px 0 12px}
+.jk-head{display:flex;justify-content:space-between;align-items:baseline;gap:10px;font-size:17px}
+.joker-card.is-open,.joker-card.is-armed{background:var(--blue-soft);text-align:center}
+.joker-card.is-open .jk-head,.joker-card.is-armed .jk-head{justify-content:center}
+.joker-card.is-used{border-style:dashed;border-color:var(--line);color:var(--muted);font-size:14px;padding:10px 14px;text-align:center}
+.joker-card .linkbtn{display:block;margin:10px auto 0}
+.jk-actions{justify-content:center}
+.jk-line{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.jk{font-size:12px;border-radius:999px;padding:2px 8px;background:#f0ece4;color:var(--muted)}
+.jk.armed{background:var(--blue-soft);color:var(--ink);font-weight:700}
+.sug.joker{background:var(--blue-soft);color:var(--ink)}
+.mc-help{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:0 0 6px;flex-wrap:wrap}
+.mc-opt.is-gone{opacity:.2;box-shadow:none;text-decoration:line-through}
+.scr-jokers{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:0 0 clamp(10px,1.4vw,20px);font-size:clamp(16px,1.3vw,24px);font-weight:700}
+
+/* ---------- Hörfragen ---------- */
+.audio-bar{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;width:fit-content;max-width:100%;margin:0 auto 14px;padding:8px 10px 8px 14px;border:1.5px solid var(--line);border-radius:12px;background:#fff}
+.scr-audio{text-align:center;font-size:clamp(20px,2vw,36px);font-weight:700;margin:0 0 clamp(10px,1.6vh,22px)}
+.audio-preview{display:block;width:100%;max-width:420px;margin-top:12px}
+
+/* ---------- Rückblick ---------- */
+.recap{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:22px;align-items:start;margin-top:10px;text-align:left;width:100%}
+.recap h3{margin:0 0 8px}
+.recap-chart{display:block;width:100%;height:auto;background:#fff;border:1.5px solid var(--line);border-radius:12px}
+.legend{display:flex;flex-wrap:wrap;gap:8px 16px;margin-top:10px;font-size:14px}
+.legend-item{display:inline-flex;align-items:center;gap:6px}
+.legend-item i{display:inline-block;width:16px;height:4px;border-radius:2px}
+.awards{display:grid;gap:10px}
+.award{display:flex;gap:12px;align-items:flex-start;border:1.5px solid var(--line);border-radius:12px;background:#fff;padding:12px 14px}
+.award-icon{font-size:28px;line-height:1}
+.award-title{font-weight:700;margin-bottom:4px}
+.award-teams{margin-bottom:2px}
+.recap.is-screen{max-width:1600px;margin:0 auto;font-size:clamp(16px,1.3vw,24px)}
+.recap.is-screen .award-icon{font-size:clamp(28px,2.6vw,48px)}
+.recap.is-screen .legend,.recap.is-screen .small{font-size:clamp(14px,1.1vw,20px)}
+.player-recap{display:grid;gap:8px;margin:14px 0 4px}
+
+/* ---------- Bibliothek, Tabellen-Import, Tastenkürzel ---------- */
+.library-foot{display:flex;justify-content:flex-end;margin-top:10px}
+.modal-card.wide{width:min(720px,100%)}
+#tableInput{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px;white-space:pre;overflow-x:auto;min-height:150px}
+.table-preview{margin-top:8px;min-height:20px}
+.table-warn{margin:6px 0 0;padding-left:18px;color:#7d4a00}
+.keys-list{display:grid;gap:7px;margin-top:10px}
+.key-row{display:grid;grid-template-columns:96px 1fr;gap:12px;align-items:center;font-size:15px}
+kbd{display:inline-block;min-width:30px;text-align:center;border:1.5px solid var(--ink);border-bottom-width:3px;border-radius:6px;padding:2px 7px;font:inherit;font-size:13px;font-weight:700;background:#fff}
+.player-foot{gap:18px;flex-wrap:wrap}
+@media(hover:none){.keys-link{display:none}}
+@media(max-width:950px){.recap{grid-template-columns:1fr}}
+.scr-jokers .tchip{display:inline-flex;align-items:center;border:2px solid var(--ink);border-radius:999px;background:var(--blue-soft);padding:4px 14px 4px 4px;font-size:clamp(14px,1.2vw,22px)}

@@ -762,7 +762,7 @@ function questionBadges(q, { forHost = false } = {}) {
   if (isFinalActive()) chips.push(`<span class="chip ink">Finalrunde</span>`);
   else chips.push(`<span class="chip yellow">${isDoubleActive() ? (q.points * 2) + ' Punkte (×2)' : q.points + ' Punkte'}</span>`);
   if (isDoubleActive()) chips.push(`<span class="chip pink">Doppelte Punkte</span>`);
-  if (parseMC(q.prompt)) chips.push(`<span class="chip blue">Multiple Choice</span>`);
+  if (current.mode === 'player') return chips.join(' ');
   if (q.question_type === 'team') chips.push(`<span class="chip">${forHost || current.mode === 'screen' ? 'Frage an ' + safe(teamLabel(getTeam(roomState.active_team_id))) : 'Ein Team'}</span>`);
   else chips.push(`<span class="chip">${typeLabel(q.question_type)}</span>`);
   return chips.join(' ');
@@ -843,8 +843,8 @@ function boardGridHtml({ interactive }) {
       const used = usedQuestionIds.has(q.id), empty = !(q.prompt || '').trim() && !q.image_url;
       if (!interactive) return `<div class="qcell ${used ? 'used' : ''}">${used ? '' : q.points}</div>`;
       const dbl = hostDoubles.ids.includes(q.id) && !used;
-      const fmt = parseMC(q.prompt) ? ' · MC' : '';
-      return `<button class="qcell ${used ? 'used' : ''} ${empty ? 'empty' : ''}" ${used ? 'disabled' : ''} onclick="chooseQuestion('${q.id}')" aria-label="${safe(c.title)} ${q.points} Punkte">${dbl ? '<span class="dbl" title="Überraschungsfeld: doppelte Punkte">×2</span>' : ''}${empty ? 'Noch leer' : q.points}<span class="type-dot">${typeLabel(q.question_type)}${fmt}</span></button>`;
+      const tags = [q.question_type !== 'all' ? typeLabel(q.question_type) : '', parseMC(q.prompt) ? 'Multiple Choice' : ''].filter(Boolean).join(', ');
+      return `<button class="qcell ${used ? 'used' : ''} ${empty ? 'empty' : ''}" ${used ? 'disabled' : ''} onclick="chooseQuestion('${q.id}')" aria-label="${safe(c.title)} ${q.points} Punkte">${dbl ? '<span class="dbl" title="Überraschungsfeld: doppelte Punkte">×2</span>' : ''}${empty ? 'Noch leer' : q.points}${tags ? `<span class="type-dot">${tags}</span>` : ''}</button>`;
     }).join('')}</div>`;
   }).join('')}</div></div>`;
 }
@@ -857,7 +857,7 @@ function renderHostBoard() {
         <button class="btn smallbtn ${ui.ranking ? 'is-on' : ''}" onclick="toggleRanking()">${ui.ranking ? 'Rangliste ausblenden' : 'Rangliste zeigen'}</button>
         <button class="btn secondary smallbtn" onclick="openFinalPicker()">Finalrunde</button>
         <button class="btn pink smallbtn" onclick="showPodium()">Spiel beenden</button>
-        <button class="btn ghost smallbtn" onclick="changeQuiz()">Quiz wechseln</button>
+        <button class="linkbtn" onclick="changeQuiz()">Quiz wechseln</button>
       </div>
     </div>${strip}${boardGridHtml({ interactive: true })}
     <div class="board-legend">×2 = Überraschungsfeld mit doppelten Punkten, nur du siehst die Markierung.

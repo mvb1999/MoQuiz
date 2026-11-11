@@ -39,6 +39,14 @@ Workflow: Änderungen werden auf `main` committet. Ist Vercel mit diesem Reposit
 - **Finalrunde:** Die Teams sehen zuerst nur die Kategorie und setzen einen Teil ihrer Punkte. Der Einsatz wird vor die Antwort geschrieben (`Einsatz 300 | Antwort`).
 - **Siegerehrung:** Podest mit Konfetti auf Beamer und Handys.
 
+## Datenbank (Supabase)
+
+- Projekt: `ottfpxtkgjkesidwfoxn` (Frankfurt). URL und öffentlicher Schlüssel stehen oben in `app.js`.
+- Die komplette Struktur liegt in `supabase/migrations/`. Damit lässt sich die Datenbank jederzeit neu aufsetzen: neues Projekt erstellen, die SQL-Datei im SQL Editor ausführen, Edge Function `supabase/functions/signup-username` deployen (JWT-Prüfung aus), URL und Schlüssel in `app.js` eintragen.
+- `public.rooms` und `public.teams` sind für alle lesbar (Live-Updates). Quiz, Lösungen, Antworten und Geheimnisse liegen im Schema `private` und sind nur über die Funktionen erreichbar.
+- Konten: Benutzername und Passwort. Supabase Auth braucht eine E-Mail-Adresse, darum wird aus dem Benutzernamen eine interne Adresse `u<hash>@users.moquiz.ch` abgeleitet. Es werden keine E-Mails verschickt.
+- Gratis-Plan: Supabase pausiert Projekte nach rund einer Woche ohne Nutzung. Dann im Dashboard «Restore project» wählen.
+
 ## Geteilter Zustand ohne Datenbank
 
 Lösung zeigen, Rangliste, Überraschungsfelder, Finalrunde und Siegerehrung verteilt der Host über einen Supabase-Broadcast-Kanal (`moquiz-ui-<roomId>`). Dafür sind keine Tabellen oder Funktionen nötig. Alle Daten zu Räumen, Teams, Antworten und Punkten laufen weiterhin über die bestehenden RPC-Funktionen.

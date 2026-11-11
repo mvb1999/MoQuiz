@@ -14,8 +14,8 @@
 /* =========================================================
    Konfiguration
    ========================================================= */
-const SUPABASE_URL = 'https://zrcmbzwvtljtjfynnzct.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_GfUxJr-3ybo3-ceDPpVAYQ_rrNnFTIb';
+const SUPABASE_URL = 'https://ottfpxtkgjkesidwfoxn.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_QL_3phtu_z8r8NMaIhBtig_yvxyOV6V';
 const SUPABASE_SCRIPTS = ['https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2', 'https://unpkg.com/@supabase/supabase-js@2'];
 const TEAM_EMOJIS = ['🦊', '🐙', '🦄', '🐸', '🐼', '🦁', '🐝', '🐧', '🦖', '🍕', '🚀', '🔥'];
 const MC_LETTERS = ['A', 'B', 'C', 'D', 'E', 'F'];
@@ -345,16 +345,48 @@ function show(which) {
    Konto
    ========================================================= */
 function accountName() { return authUser?.user_metadata?.username || 'Konto'; }
+/* Konten mit Benutzername: Supabase Auth braucht eine E-Mail-Adresse. Daraus wird eine
+   feste, interne Adresse abgeleitet (Hash des Benutzernamens). Es werden nie E-Mails verschickt.
+   Gleicher Algorithmus wie in supabase/functions/signup-username/index.ts */
+function normUsername(u) { return String(u ?? '').normalize('NFC').trim().replace(/\s+/g, ' ').toLowerCase(); }
+async function usernameToEmail(username) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode('moquiz:' + normUsername(username)));
+  return 'u' + [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('').slice(0, 40) + '@users.moquiz.ch';
+}
+function authErrorText(e, fallback) {
+  const m = String(e?.message || e || '');
+  if (/invalid login credentials/i.test(m)) return 'Benutzername oder Passwort ist falsch.';
+  if (/already (been )?registered|already exists|user_already_exists/i.test(m)) return 'Dieser Benutzername ist schon vergeben.';
+  if (/email not confirmed/i.test(m)) return 'Das Konto ist noch nicht freigeschaltet. Bitte versuche es in einer Minute nochmals.';
+  if (/rate limit|too many/i.test(m)) return 'Zu viele Versuche. Bitte kurz warten und nochmals probieren.';
+  if (/password/i.test(m)) return 'Das Passwort ist zu kurz oder zu einfach.';
+  if (/failed to fetch|load failed|networkerror/i.test(m)) return connectionErrorText();
+  return m || fallback;
+}
 async function loginWithUsername(username, password) {
   try { await ensureDb(); } catch { throw new Error(connectionErrorText()); }
-  const response = await fetch(SUPABASE_URL + '/functions/v1/login-username', {
-    method: 'POST', headers: { 'Content-Type': 'application/json', apikey: SUPABASE_KEY }, body: JSON.stringify({ username, password }),
-  });
-  const result = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(result.error || 'Benutzername oder Passwort ist falsch.');
-  const { data, error } = await db.auth.setSession({ access_token: result.access_token, refresh_token: result.refresh_token });
-  if (error) throw error;
+  const { data, error } = await db.auth.signInWithPassword({ email: await usernameToEmail(username), password });
+  if (error) throw new Error(authErrorText(error, 'Anmeldung fehlgeschlagen.'));
   return data.user;
+}
+/* Konto erstellen: zuerst über die Edge Function (Konto sofort freigeschaltet),
+   sonst direkt über Supabase Auth (funktioniert, wenn «Confirm email» ausgeschaltet ist). */
+async function createAccount(username, password) {
+  await ensureDb();
+  let res = null;
+  try {
+    res = await fetch(SUPABASE_URL + '/functions/v1/signup-username', {
+      method: 'POST', headers: { 'Content-Type': 'application/json', apikey: SUPABASE_KEY }, body: JSON.stringify({ username, password }),
+    });
+  } catch { res = null; }
+  if (res && res.status !== 404) {
+    const result = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(authErrorText(result.error, 'Konto konnte nicht erstellt werden.'));
+    return;
+  }
+  const { data, error } = await db.auth.signUp({ email: await usernameToEmail(username), password, options: { data: { username } } });
+  if (error) throw new Error(authErrorText(error, 'Konto konnte nicht erstellt werden.'));
+  if (!data.session) throw new Error('Konto erstellt, aber Supabase verlangt eine E-Mail-Bestätigung. Im Supabase-Projekt unter Authentication die Option «Confirm email» ausschalten.');
 }
 function updateAuthUI() {
   const b = $('accountButton'); if (!b) return;
@@ -397,12 +429,7 @@ async function signupAccount() {
   if (password.length < 6) { setMsg('authError', 'Das Passwort muss mindestens 6 Zeichen haben.'); return; }
   setAuthBusy(true);
   try {
-    await ensureDb();
-    const response = await fetch(SUPABASE_URL + '/functions/v1/signup-username', {
-      method: 'POST', headers: { 'Content-Type': 'application/json', apikey: SUPABASE_KEY }, body: JSON.stringify({ username, password }),
-    });
-    const result = await response.json().catch(() => ({}));
-    if (!response.ok) { setMsg('authError', result.error || 'Konto konnte nicht erstellt werden.'); return; }
+    await createAccount(username, password);
     authUser = await loginWithUsername(username, password); await finishAccountLogin();
   } catch (e) { setMsg('authError', errText(e) || 'Konto konnte nicht erstellt werden.'); }
   finally { setAuthBusy(false); }
